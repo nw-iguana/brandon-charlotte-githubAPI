@@ -4,18 +4,26 @@ function handleSubmitButton() {
     $('#submit-button').on('click', function(event) { 
         event.preventDefault();
         let userName = $('#username-search-bar').val();
-        console.log($('#username-search-bar').val());
         getGitHubUser(userName);
     });
 }
 
 function getGitHubUser(userName) {
-    //Creating fetch url 
     const gitLink = `https://api.github.com/users/${userName}/repos`;
     fetch(gitLink)
-    .then(response => response.json())
-    .then(responseJson => stringAssembler(responseJson));
-    .catch(err =>  )
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error(response.statusText);
+    })
+    .then(responseJson => stringAssembler(responseJson))
+    .catch(err => renderErrorMessage(err));
+}
+
+function renderErrorMessage(err) {
+    $('.error').removeClass('hidden').text(`Something went wrong: ${err.message}.`);
+    $('.githubRepos').empty('');
 }
 
 function stringAssembler(responseJson) {
@@ -32,6 +40,7 @@ function stringAssembler(responseJson) {
 function renderSearchResults(results) {
     $('.githubRepos').empty('').append(results);
     $('.search-results').removeClass('hidden');
+    $('.error').empty();
 }
 
 $(handleSubmitButton);
